@@ -13,21 +13,13 @@ Build the application using the following command:
 ./gradlew nativeCompile
 ```
 
-Run a PostgreSQL container with Podman or Docker:
-
-```shell
-podman compose up -d
-# or
-docker compose up -d
-```
-
 Start the application:
 
 ```shell
 ./build/native/nativeCompile/spring-boot-flyway-graalvm-error
 ```
 
-You should see an error similar to the following:
+You should see an error similar to the following. The error should be due to the database not being available, but the Flyway exception code not being supported in native mode hides the real error. Also, it's very confusing since it looks like it's trying to use SQL Server instead of PostgreSQL, which is the database configured in the application:
 
 ```log
 2026-03-15T20:46:28.937+01:00  WARN 56417 --- [demo] [           main] s.s.c.ServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'flywayInitializer': org.flywaydb.core.internal.exception.sqlExceptions.FlywaySqlServerUntrustedCertificateSqlException.isFlywaySpecificVersionOf(java.sql.SQLException)
@@ -68,6 +60,20 @@ Caused by: java.lang.NoSuchMethodException: org.flywaydb.core.internal.exception
         at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1864)
         at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1813)
         ... 21 more
+```
+
+Now run a PostgreSQL container with Podman or Docker:
+
+```shell
+podman compose up -d
+# or
+docker compose up -d
+```
+
+Try again to start the application, which should now work without any error:
+
+```shell
+./build/native/nativeCompile/spring-boot-flyway-graalvm-error
 ```
 
 ## How to solve it
